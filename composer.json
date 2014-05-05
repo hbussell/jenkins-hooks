@@ -1,0 +1,7 @@
+{
+    "require": {
+        "silex/silex": "~1.2",
+        "doctrine/dbal": "2.2.*",
+        "guzzle/guzzle": "v3.9.0"
+    }
+}

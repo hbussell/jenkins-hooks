@@ -1,4 +1,5 @@
-# Bootstrap
+*.swp
+# Bootstrapi
 app/bootstrap*
 
 # Symfony directories
@@ -7,7 +8,7 @@ vendor/*
 */cache/*
 web/uploads/*
 web/bundles/*
-
+config.php
 # Configuration files
 app/config/parameters.ini
 app/config/parameters.yml

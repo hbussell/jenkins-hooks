@@ -1,0 +1,16 @@
+<?php
+
+$jenkins_path = 'https://your.jenkins.net';
+
+$app['debug'] = true;
+$app['jenkins_path'] = 'https://your.jenkins.net';
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => array(
+        'driver'   => 'pdo_mysql',
+        'host'     => 'localhost',
+        'dbname'     => 'relhub_jenkins',
+        'user'     => 'user',
+        'password'     => 'pass',
+    ),
+));
+
