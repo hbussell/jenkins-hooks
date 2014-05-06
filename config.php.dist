@@ -1,9 +1,8 @@
 <?php
 
-$jenkins_path = 'https://your.jenkins.net';
 
 $app['debug'] = true;
-$app['jenkins_path'] = 'https://your.jenkins.net';
+$app['jenkins_uri'] = 'https://your.jenkins.net:8080';
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver'   => 'pdo_mysql',

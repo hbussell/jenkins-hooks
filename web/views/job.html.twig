@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>{{ job }} details</h1>
+<p>Status:{{ status }}</p>
+<p>{{ message }}</p>
+<p><a href="{{ url }}">View {{ job }} on Jenkins</a></p>
+{% if healthReport %}
+<p>{{ healthReport }}</p>
+{% endif %}
+{% if lastBuildUrl %}
+<p><a href="{{ lastBuildUrl }}">View last build on Jenkins</a></p>
+{% endif %}
+<p><a href="/build-create?project={{ project }}&branch={{ branch }}">Trigger a new Build!</a></p>
+
+{% endblock %}
+

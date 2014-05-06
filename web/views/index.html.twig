@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+
+<h1>Jenkins Jobs</h1>
+<p>Exposes simple webhooks to create jenkins jobs, run builds and get job status</p>
+
+<p>
+<ul>
+  <li>
+    <h3><a href="/job">/job</a></h3>
+    <p>This action will create a job using the project template if one does not already exist</p>
+  </li>
+  <li>
+    <h3><a href="/build-create">/build-create</a></h3>
+    <p>Create a build if needed for a branch or return the current build details</p>
+  </li>
+  <li>
+    <h3><a href="/build-job-create">/build-job-create</a></h2>
+    <p>This action does it all for you and is designed to be the the best connection point with external systems.</p>
+    <p>When fired from an intergration script this action will create a new job for you for each branch and send post backs for each branch as complted.</p>
+  </li>
+</ul>
+</p>
+
+
+{% endblock %}

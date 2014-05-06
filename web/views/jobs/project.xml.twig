@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>
+    {{description}}
+  </description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.8">
+      <projectUrl>https://github.com/fclimited/{{project}}/</projectUrl>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.1">
+      <maxConcurrentPerNode>1</maxConcurrentPerNode>
+      <maxConcurrentTotal>1</maxConcurrentTotal>
+      <throttleEnabled>true</throttleEnabled>
+      <throttleOption>{{project}}</throttleOption>
+      <categoryName>full-deploy-infrastructure</categoryName>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>{{git_url}}</url>
+        <credentialsId>{{credentials}}</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>origin/{{branch}}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <browser class="hudson.plugins.git.browser.GithubWeb">
+      <url>https://github.com/fclimited/{{project}}/tree/{{branch}}</url>
+    </browser>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    {{pre_build_shell}}
+    <hudson.plugins.phing.PhingBuilder plugin="phing@0.13.1">
+      <name>2.6.1</name>
+      <targets>build</targets>
+      <useModuleRoot>true</useModuleRoot>
+    </hudson.plugins.phing.PhingBuilder>
+    {{post_build_shell}}
+  </builders>
+  <publishers>
+    {{htmlPublishers}}
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>{{report_path}}</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+
+    <hudson.tasks.Mailer plugin="mailer@1.6">  
+      <recipients>{{recipients}}</recipients>  
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild> 
+      <sendToIndividuals>false</sendToIndividuals> 
+    </hudson.tasks.Mailer>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.36">
+        <recipientList>$DEFAULT_RECIPIENTS</recipientList>
+        <configuredTriggers>
+            <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+                <email>
+                    <recipientList/>
+                    <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+                    <body>$PROJECT_DEFAULT_CONTENT</body>
+                    <sendToDevelopers>false</sendToDevelopers>
+                    <sendToRequester>false</sendToRequester>
+                    <includeCulprits>false</includeCulprits>
+                    <sendToRecipientList>true</sendToRecipientList>
+                    <attachmentsPattern/>
+                    <attachBuildLog>true</attachBuildLog>
+                    <compressBuildLog>false</compressBuildLog>
+                    <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+                    <contentType>project</contentType>
+                </email>
+            </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+        </configuredTriggers>
+        <contentType>default</contentType>
+        <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+        <defaultContent>$DEFAULT_CONTENT</defaultContent>
+        <attachmentsPattern/>
+        <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+        <attachBuildLog>true</attachBuildLog>
+        <compressBuildLog>false</compressBuildLog>
+        <replyTo>$DEFAULT_REPLYTO</replyTo>
+        <saveOutput>false</saveOutput>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+
+  </publishers>
+  <buildWrappers/>
+</project>
+    
