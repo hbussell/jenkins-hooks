@@ -1,9 +1,10 @@
-git_url: git@github.com:fclimited/fcl-corporate.git
+git_url: git@github.com:hbussell/release-hub-jenkins-plugin.git
 credentials: jenkins
-recipients: modmac@gmail.com
-report_path: build/*/*.xml,docroot/sites/*/tests/behat/test-report-xml/*.xml,docroot/sites/all/modules/custom/*/tests/behat/test-report-xml/*.xml
+recipients: user@email.com
+report_path: build/*.xml
 pre_build_shell:
-  - unlink /data/docroot/web/docroot || true; ln -s ${WORKSPACE}/docroot /data/docroot/web/docroot; mkdir bin; ln -s /var/lib/jenkins/jobs/testing-framework/workspace/bin/behat bin/behat
+  - true
 post_build_shell:
-description:  <h2>Drupal Project</h2><h3>Executing unit tests over and {{branch}} branch</h3>
+  - true
+description: {{branch}} Job</h3>
 htmlPublishers:
