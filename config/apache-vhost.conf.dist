@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+    ServerName local.releasehubjenkins.com
+    ServerAlias local.releasehubjenkins.com
+    ServerAdmin webmaster@localhost
+
+    DocumentRoot /var/docroot/release-hub-jenkins-plugin/web
+    <Directory /var/docroot/release-hub-jenkins-plugin/web/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Require all granted
+        Order allow,deny
+        allow from all
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^(.*)$ /index.php [QSA,L]
+        </IfModule>
+    </Directory>
+</VirtualHost>
