@@ -1,9 +1,17 @@
-release-hub-jenkins-plugin
-==========================
+jekins-hooks
+============
 
-Jenkins plugin for Relhub
+Restful interface to jenkins builds and jobs
+--------------------------------------------
 
-Embeddable Build Status Plugin
-https://wiki.jenkins-ci.org/display/JENKINS/Embeddable+Build+Status+Plugin
 
-https://jenkins/job/{job}/lastBuild/console
+### Installation
+
+Using Ansible
+
+
+    sudo apt-get install ansible
+    git clone git@github.com:hbussell/jenkins-hooks.git
+    cd jenkins-hooks
+    sudo ansible-playbook setup.yml -i inventory
+

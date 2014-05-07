@@ -3,11 +3,17 @@
 require_once __DIR__.'/../vendor/autoload.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Jenkins\Jenkins;
 
 $app = new Silex\Application();
 
-require_once __DIR__.'/../config.php';
-require_once __DIR__.'/../jenkins.php';
+if (!file_exists(__DIR__.'/../config/config.php')) {
+  print 'Please copy config.php.j2 to config.php and configure your settings.';
+  die();
+}
+
+
+require_once __DIR__.'/../config/config.php';
 
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/views',
@@ -28,15 +34,15 @@ $app->before(function (Request $request) {
  */
 
 /**
- * Return the current build status if the job is building, 
- * or create a new build.  
+ * Return the current build status if the job is building,
+ * or create a new build.
  *
  * This action also will create the job if needed making it the best
  * single url to access from external systems.
  *
- * If a job has been created or is still running save an 
+ * If a job has been created or is still running save an
  * entry to the database to allow a post back when the build completes.
- */ 
+ */
 $app->get('/build-job-create', function (Request $request) use ($app) {
   $branch = $request->get('branch');
   $project = $request->get('project');
@@ -48,16 +54,16 @@ $app->get('/build-job-create', function (Request $request) use ($app) {
 
   $jenkins = new Jenkins($app['jenkins_uri']);
   $jobName = Jenkins::getJobName($request, $app['twig'], $branch, $project);
-  
+
   // First check if the job exists.
   $response = $jenkins->request("/job/$jobName/api/json");
   if ($response && $response->isSuccessful()) {
-    
-    $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName); 
+
+    $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName);
     if ($buildingResponse) {
       return $buildingResponse;
     }
-    
+
     // Trigger new build.
     return createBuildResponse($jenkins, $request->getRequestUri(), $postbackUri, $jobName);
 
@@ -66,8 +72,8 @@ $app->get('/build-job-create', function (Request $request) use ($app) {
   // Job does not exist so lets create it.
   try {
     $response = $jenkins->createJob($app, $jobName, $project, $branch);
-  } 
-  catch(\Exceptoin $e) {    
+  }
+  catch(\Exceptoin $e) {
     return renderConditional($app, $request, 'error.html.twig', array('message'=>$e->getMessage()), 400);
   }
 
@@ -79,12 +85,12 @@ $app->get('/build-job-create', function (Request $request) use ($app) {
 });
 
 /**
- * Return the current build status if the job is building, 
+ * Return the current build status if the job is building,
  * or create a new build.
  *
- * If a job has been created or is still running save an 
+ * If a job has been created or is still running save an
  * entry to the database to allow a post back when the build completes.
- */ 
+ */
 $app->get('/build-create', function (Request $request) use ($app) {
 
   $branch = $request->get('branch');
@@ -99,7 +105,7 @@ $app->get('/build-create', function (Request $request) use ($app) {
   $jobName = Jenkins::getJobName($request, $app['twig'], $branch, $project);
 
   // Get a response if there is currently a build in progress.
-  $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName); 
+  $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName);
   if ($buildingResponse) {
     return $buildingResponse;
   }
@@ -109,16 +115,16 @@ $app->get('/build-create', function (Request $request) use ($app) {
 });
 
 
-/** 
+/**
  * Create new Jenkins job if none found for the the given branch.
- * 
+ *
  * If a job alread exists return the job details.
  */
 $app->get('/job', function (Request $request) use ($app) {
 
   $branch = $request->get('branch');
   $project = $request->get('project');
-  
+
   if (!$branch || !$project) {
     return renderConditional($app, $request, 'error.html.twig', array('message'=>'Missing required fields: branch, project'), 400);
   }
@@ -133,7 +139,7 @@ $app->get('/job', function (Request $request) use ($app) {
     $jobDetails = $response->json();
     $data = array(
       'project' => $project,
-      'branch' => $branch,      
+      'branch' => $branch,
       'status' => 'job_exists',
       'message' => 'Current Job Details',
       'job' => $jobDetails['displayName'],
@@ -147,8 +153,8 @@ $app->get('/job', function (Request $request) use ($app) {
   // Create a new job using this project configuration.
   try {
     $response = $jenkins->createJob($app, $jobName, $project, $branch);
-  } 
-  catch(\Exceptoin $e) {    
+  }
+  catch(\Exceptoin $e) {
     return renderConditional($app, $request, 'error.html.twig', array('message'=>$e->getMessage()), 400);
   }
   $data = array(
@@ -165,7 +171,7 @@ $app->get('/job', function (Request $request) use ($app) {
 
 /**
  * Homepage route
- */ 
+ */
 $app->get('/', function (Request $request) use ($app) {
   return renderConditional($app, $request, 'index.html.twig');
 });
@@ -176,7 +182,7 @@ $app->get('/', function (Request $request) use ($app) {
  * @param $app
  *   Silex app instance
  * @param Symfony\Component\HttpFoundation\Request $request
- *   Request object  
+ *   Request object
  * @param string $template
  *   template path
  * @param array $data
@@ -201,7 +207,7 @@ function renderConditional($app, $request, $template, $data=array(), $statusCode
 function createBuildResponse($jenkins, $requestUri, $postbackUri, $jobName){
   $statusCode = 201;
   $template = 'jobSuccess.html.twig';
-  
+
   try {
     $jenkins->createBuild($app, $requestUri, $postbackUri, $jobName);
     $data = array(
@@ -226,7 +232,7 @@ function createBuildResponse($jenkins, $requestUri, $postbackUri, $jobName){
 function getBuildingResponse($app, $jenkins, $request, $jobName) {
   $response = $jenkins->request("/job/$jobName/lastBuild/api/json");
   if ($response && $response->isSuccessful()) {
-    
+
     $lastBuild = $response->json();
     if ($lastBuild['building'] == 'true') {
       // Record that a build is in progress to the db to check back later.

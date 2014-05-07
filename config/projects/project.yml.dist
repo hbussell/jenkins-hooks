@@ -3,8 +3,8 @@ credentials: jenkins
 recipients: user@email.com
 report_path: build/*.xml
 pre_build_shell:
-  - true
+  - echo "pre build" > /dev/null
 post_build_shell:
-  - true
-description: {{branch}} Job</h3>
+  - echo "post build" > /dev/null
+description: {{branch}} Job
 htmlPublishers:

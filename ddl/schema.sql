@@ -6,5 +6,5 @@
   buildNumber int NOT NULL,
   created datetime NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY job_build_url (jobName, postbackUri, buildNumber)
+  UNIQUE KEY job_build_url (jobName, buildNumber)
 ) ENGINE=InnoDB;
