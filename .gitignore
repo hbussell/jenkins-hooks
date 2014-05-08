@@ -6,6 +6,4 @@ app/bootstrap*
 vendor/*
 */logs/*
 */cache/*
-web/uploads/*
-web/bundles/*
 config.php
