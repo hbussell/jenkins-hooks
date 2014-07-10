@@ -1,10 +1,9 @@
 <VirtualHost *:80>
-    ServerName local.releasehubjenkins.com
-    ServerAlias local.releasehubjenkins.com
+    ServerName {{ server_name }}
     ServerAdmin webmaster@localhost
 
-    DocumentRoot /var/docroot/release-hub-jenkins-plugin/web
-    <Directory /var/docroot/release-hub-jenkins-plugin/web/>
+    DocumentRoot {{ docroot }}
+    <Directory {{ docroot }}>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Require all granted

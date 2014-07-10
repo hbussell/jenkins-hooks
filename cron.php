@@ -2,12 +2,13 @@
 
 require_once __DIR__.'/vendor/autoload.php';
 
+use Guzzle\Http\Client;
+use Jenkins\Jenkins;
+
 $app = new Silex\Application();
 
-use Guzzle\Http\Client;
+require_once __DIR__.'/config/config.php';
 
-require_once __DIR__.'/config.php';
-require_once __DIR__.'/jenkins.php';
 
 $sql = "SELECT * FROM builds order by created ASC limit 10";
 $builds = $app['db']->fetchAll($sql);
@@ -20,14 +21,14 @@ foreach ($builds as $build) {
   $jobName = $build['jobName'];
   $response = $jenkins->request("/job/$jobName/lastBuild/api/json");
   if ($response && $response->isSuccessful()) {
-    
+
     $lastBuild = $response->json();
     if ($lastBuild['building'] != 'true') {
       $number = $lastBuild['number'];
       if ($number >= $build['buildNumber']) {
-        // last build is higher that the database record so it can be removed 
+        // last build is higher that the database record so it can be removed
         // and postback url can be fired.
-        $postbackUri = $build['postbackUri']; 
+        $postbackUri = $build['postbackUri'];
         $client = new Client($postbackUri);
 
         $contentType = 'application/json';

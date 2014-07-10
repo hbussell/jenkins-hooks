@@ -1,0 +1,15 @@
+<?php
+
+
+$app['debug'] = true;
+$app['jenkins_uri'] = '{{jenkins_uri}}';
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => array(
+        'driver'   => '{{ db_driver }}',
+        'host'     => 'localhost',
+        'dbname'     => '{{ db_name }}',
+        'user'     => '{{ db_user }}',
+        'password'     => '{{ db_pass }}',
+    ),
+));
+

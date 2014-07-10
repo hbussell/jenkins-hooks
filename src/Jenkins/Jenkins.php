@@ -1,36 +1,38 @@
 <?php
 
+namespace Jenkins;
+
 use Guzzle\Http\Client;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * Manage all requests to the jenkins server.
- */ 
+ */
 class Jenkins {
 
   /**
    * @var string
    *   Jenkins server uri eg: http://jenkins.mydomin.com:8080
-   */   
-  private $jenkinsServer;  
+   */
+  private $jenkinsServer;
 
   /**
    * Create new Jenkins handler using the given server uri.
-   * 
+   *
    * @param string $jenkinsServer
    *   jenkins server uri.
-   */  
+   */
   public function __construct($jenkinsServer) {
     $this->jenkinsServer = $jenkinsServer;
   }
 
   /**
-   * Get the Jenkins job name for the given request.  
+   * Get the Jenkins job name for the given request.
    *
    * Find the job name using the request params, first looking for a "job_name" if set.
-   * Otherwise render a twig template to create the job name.  
-   * The twig template file can be created with the format "myproject-jobName.html.twig" 
-   * to overide the default "jobName.html.twig" 
+   * Otherwise render a twig template to create the job name.
+   * The twig template file can be created with the format "myproject-jobName.html.twig"
+   * to overide the default "jobName.html.twig"
    *
    * @param $request
    *   Http request object
@@ -40,10 +42,10 @@ class Jenkins {
    *   branch name request param
    * @param string $project
    *   project request param
-   * 
+   *
    * @return string
    *   job name
-   */            
+   */
   public static function getJobName($request, $twig, $branch, $project) {
     $jobName = $request->get('job_name');
     if ($jobName) {
@@ -93,15 +95,15 @@ class Jenkins {
     $template = 'jobSuccess.html.twig';
     if ($response && $response->isSuccessful()) {
       sleep(1);
-      $lastBuildResponse = $this->request("/job/$jobName/lastBuild/api/json");    
+      $lastBuildResponse = $this->request("/job/$jobName/lastBuild/api/json");
       $lastBuild = $lastBuildResponse->json();
       // Record that a build is in progress to the db to check back later.
       $this->saveBuild($app, $requestUri, $postbackUri, $jobName, $lastBuild['number']);
       return;
     }
 
-    throw new \Exception('Build could not be created: '.$response->getMessage());    
-   
+    throw new \Exception('Build could not be created: '.$response->getMessage());
+
   }
 
   /**
@@ -149,17 +151,17 @@ class Jenkins {
    *   jenkins job name.
    * @param int $buildNumber
    *   the job build number.
-   */  
+   */
 
   function saveBuild($app, $requestUri, $postbackUri, $jobName, $buildNumber) {
     try {
       $app['db']->insert('builds',
         array(
-          'requestUri'=>$requestUri, 
+          'requestUri'=>$requestUri,
           'postbackUri'=>$postbackUri,
           'jobName'=>$jobName,
           'buildNumber'=>$buildNumber,
-          'created'=>date("Y-m-d H:i:s") 
+          'created'=>date("Y-m-d H:i:s")
         )
       );
     }

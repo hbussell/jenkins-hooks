@@ -1,0 +1,59 @@
+---
+- hosts: localhost
+
+  vars:
+    git_url: git@github.com:hbussell/jenkins-hooks.git
+ 
+  vars_prompt:
+    - name: "apache_vhost"
+      prompt: "Install apache vhost? (Enter y)"
+      default: "n"
+      private: no
+    - name: "add_hosts"
+      prompt: "Add domain to /etc/hosts (Enter y)"
+      default: "n"
+      private: no
+    - name: "server_name"
+      prompt: "Enter server name"
+      default: "local.jenkinshooks"
+      private: no
+    - name: "docroot"
+      prompt: "Enter docroot path (Enter path to web)"
+      default: "/var/docroot/jenkins-hooks/web"
+      private: no
+
+  tasks:
+    - name: ensure packages are installed
+      action: apt name={{item}}
+      with_items:
+          - php5
+          - php5-cli
+          - curl
+          - python-mysqldb
+
+    - name: install composer requirements
+      shell: php composer.phar install
+
+    - name: install apache vhost
+      template: src=config/apache-vhost.conf.j2 dest=/etc/apache2/sites-enabled/jenkins-hooks.conf
+      notify: Restart apache
+      when: apache_vhost=='y'
+        
+    - name: add host entry
+      shell: echo "127.0.0.1 {{ server_name }}" >> /etc/hosts
+      when: add_hosts=='y'
+   
+    - name: create database
+      action: mysql_db db={{db_name}} state=present login_user={{db_user}} login_password={{db_pass}}
+
+    - name: install schema
+      shell: mysql -u{{db_user}} -p{{db_pass}} {{db_name}} < ddl/schema.sql    
+      when: install_schema=='y'
+
+    - name: create config file
+      template: src=config/config.php.j2 dest=config/config.php
+
+  handlers:
+    - name: Restart apache
+      action: service name=apache state=restarted
+
