@@ -170,6 +170,31 @@ $app->get('/job', function (Request $request) use ($app) {
 });
 
 /**
+ * Github post commit hook.
+ */
+$app->get('/github/commit', function (Request $request) use ($app) {
+  $content = $request->get();
+  // Get branch to build from github payload.
+  $json = json_decode($content);
+  $branch = $json['branch'];
+
+  
+    
+
+  $jenkins = new Jenkins($app['jenkins_uri']);
+  $jobName = Jenkins::getJobName($request, $app['twig'], $branch, $project);
+
+  // Get a response if there is currently a build in progress.
+  $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName);
+  if ($buildingResponse) {
+    return $buildingResponse;
+  }
+
+  // Trigger new build.
+  return createBuildResponse($jenkins, $request->getRequestUri(), $postbackUri, $jobName);
+});
+
+/**
  * Homepage route
  */
 $app->get('/', function (Request $request) use ($app) {
