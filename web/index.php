@@ -178,20 +178,41 @@ $app->get('/github/commit', function (Request $request) use ($app) {
   $json = json_decode($content);
   $branch = $json['branch'];
 
+  $modified = $json['modified'];
+
+  $buildBranch = FALSE;
   
+  if (in_array($branch, array('develop', 'stage', 'master'))) {
+    $buildBranch = TRUE;
+  } 
+  else {
+    foreach ($modified as $file) {
+      if (preg_match($file, '/(\.php|\.inc|\.module)$/')) {
+        $buildBranch = TRUE;
+        break;
+      }
+    }
+  }
     
+  if ($buildBranch) {
+    $jenkins = new Jenkins($app['jenkins_uri']);
+    $jobName = Jenkins::getJobName($request, $app['twig'], $branch, $project);
 
-  $jenkins = new Jenkins($app['jenkins_uri']);
-  $jobName = Jenkins::getJobName($request, $app['twig'], $branch, $project);
+    // Get a response if there is currently a build in progress.
+    $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName);
+    if ($buildingResponse) {
+      return $buildingResponse;
+    }
 
-  // Get a response if there is currently a build in progress.
-  $buildingResponse = getBuildingResponse($app, $jenkins, $request, $jobName);
-  if ($buildingResponse) {
-    return $buildingResponse;
+    // Trigger new build.
+    return createBuildResponse($jenkins, $request->getRequestUri(), $postbackUri, $jobName);
   }
 
-  // Trigger new build.
-  return createBuildResponse($jenkins, $request->getRequestUri(), $postbackUri, $jobName);
+  $data = array(
+    'message' => 'Job not needed for build'
+  );
+  // Return default no build message
+  return renderConditional($app, $request, 'jobNotCreated.html.twig', $data);
 });
 
 /**
